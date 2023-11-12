@@ -28,7 +28,7 @@ Follow these steps to run the project:
 4. Install the application: (optional)
 
    ```bash
-   go install github.com/bariiss/aws-mfa-go
+   go install github.com/bariiss/aws-mfa-go@latest
    aws-mfa-go # NOTE: You must set the environment variables and credentials before running the application.
    ```
 
