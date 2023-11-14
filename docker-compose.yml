@@ -1,0 +1,12 @@
+services:
+  aws-mfa-go:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: aws-mfa-go
+    environment:
+      - AWS_MFA_GO_USER=<profile>
+      - AWS_MFA_GO_REGION=<region>
+    volumes:
+      - ~/.aws/credentials:/root/.aws/credentials
+      - ~/.aws/config:/root/.aws/config
