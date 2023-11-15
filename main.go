@@ -3,13 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
-	u "github.com/bariiss/aws-mfa-go/util"
-	"github.com/fatih/color"
 	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"time"
+
+	u "github.com/bariiss/aws-mfa-go/util"
+	"github.com/fatih/color"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -21,12 +21,6 @@ var (
 )
 
 func main() {
-	checkAWS()
-
-	if checkProfile() {
-		return
-	}
-
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
 		config.WithSharedConfigProfile(awsProfile+"-go"),
 		config.WithRegion(awsRegion),
@@ -141,14 +135,6 @@ func checkProfile() bool {
 		return true
 	}
 	return false
-}
-
-func checkAWS() {
-	if _, err := exec.LookPath("aws"); err != nil {
-		info := color.New(color.FgYellow).SprintFunc()
-		fmt.Println(info("💩 AWS CLI is not installed. Please install it to use this program effectively." +
-			"\n👉 https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html"))
-	}
 }
 
 func printInfo() {
