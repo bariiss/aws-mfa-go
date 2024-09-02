@@ -32,8 +32,8 @@ jobs:
     if: contains(github.event.head_commit.message, '#release')
     strategy:
       matrix:
-        os: [linux, windows, darwin]
-        arch: [amd64, arm64]
+        os: [linux]
+        arch: [amd64, arm64, arm, ppc64le, s390x, riscv64, mips64, mips64le, mips, mipsle]
 
     steps:
       - name: Check out code
