@@ -28,12 +28,12 @@ on:
 jobs:
   release:
     name: Create Release and Attach Artifacts
-    runs-on: [ubuntu-latest]
+    runs-on: ubuntu-latest
     if: contains(github.event.head_commit.message, '#release')
     strategy:
       matrix:
-        os: [linux]
-        arch: [amd64, arm64, arm, ppc64le, s390x, riscv64, mips64, mips64le, mips, mipsle]
+        os: [linux, windows, darwin]
+        arch: [amd64, arm64]
 
     steps:
       - name: Check out code
@@ -44,27 +44,39 @@ jobs:
         with:
           go-version: '1.23.0'
 
-      - name: Create Tag
+      - name: Create a Single Tag
         id: create_tag
         run: |
-          VERSION=$(date +'%Y.%m.%d-%H%M%S')
+          if [ -z "${{ github.event.head_commit.message }}" ]; then
+            VERSION=$(date +'%Y.%m.%d-%H%M%S')
+          else
+            VERSION=$(date +'%Y.%m.%d')
+          fi
           echo "TAG_NAME=v${VERSION}" >> $GITHUB_ENV
+          echo "Created TAG_NAME=$TAG_NAME"
 
       - name: Build Binary for Release
         run: |
           CGO_ENABLED=0 GOARCH=${{ matrix.arch }} GOOS=${{ matrix.os }} go build -o aws-mfa-go-${{ matrix.os }}-${{ matrix.arch }}-${{ env.TAG_NAME }} -a -ldflags="-s -w" -installsuffix cgo
 
+      - name: Verify Binary Existence
+        run: |
+          echo "Verifying binary existence..."
+          ls -la aws-mfa-go-${{ matrix.os }}-${{ matrix.arch }}-${{ env.TAG_NAME }}
+
       - name: Upload Release Assets
+        if: success()
         uses: actions/upload-artifact@v3
         with:
           name: aws-mfa-go-${{ matrix.os }}-${{ matrix.arch }}
           path: aws-mfa-go-${{ matrix.os }}-${{ matrix.arch }}-${{ env.TAG_NAME }}
 
       - name: Create Release
+        if: success()
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ env.TAG_NAME }}
           name: Release ${{ env.TAG_NAME }}
-          files: aws-mfa-go-*
+          files: aws-mfa-go-${{ matrix.os }}-${{ matrix.arch }}-${{ env.TAG_NAME }}
         env:
           GITHUB_TOKEN: ${{ secrets.MY_PAT_TOKEN }}
