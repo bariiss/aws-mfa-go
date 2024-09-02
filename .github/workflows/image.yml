@@ -28,7 +28,7 @@ jobs:
   build:
     name: Build and Push Multi-Arch aws-mfa-go Image to GitHub Container Registry
     runs-on: [ubuntu-latest]
-    if: contains(github.event.head_commit.message, '#build')
+    if: contains(github.event.head_commit.message, '#image')
     steps:
       - name: Check out code
         uses: actions/checkout@v2
