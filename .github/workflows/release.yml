@@ -1,29 +1,11 @@
 name: Build and Release Multi-Arch aws-mfa-go
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
   workflow_dispatch:
     inputs:
-      logLevel:
-        description: "Log level"
+      tag_name:
+        description: "Tag Name"
         required: true
-        default: "debug"
-        type: choice
-        options:
-          - info
-          - warning
-          - debug
-      tags:
-        description: "Test scenario tags"
-        required: false
-        type: boolean
-      environment:
-        description: "Environment to run tests against"
-        type: environment
-        required: false
 
 jobs:
   release:
@@ -39,21 +21,9 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4
 
-      - name: Set up Go environment
-        uses: actions/setup-go@v4
-        with:
-          go-version: '1.23.0'
-
-      - name: Create a Single Tag
-        id: create_tag
-        run: |
-          VERSION=$(date +'%Y%m%d')
-          echo "TAG_NAME=v${VERSION}" >> $GITHUB_ENV
-          echo "Created TAG_NAME=$TAG_NAME"
-
       - name: Build Binary for Release
         run: |
-          BINARY_NAME=aws-mfa-go-${{ matrix.os }}-${{ matrix.arch }}-${{ env.TAG_NAME }}
+          BINARY_NAME=aws-mfa-go-${{ matrix.os }}-${{ matrix.arch }}-${{ github.event.inputs.tag_name }}
           if [ "${{ matrix.os }}" == "windows" ]; then
             BINARY_NAME="${BINARY_NAME}.exe"
           fi
@@ -61,7 +31,7 @@ jobs:
 
       - name: Verify Binary Existence
         run: |
-          BINARY_NAME=aws-mfa-go-${{ matrix.os }}-${{ matrix.arch }}-${{ env.TAG_NAME }}
+          BINARY_NAME=aws-mfa-go-${{ matrix.os }}-${{ matrix.arch }}-${{ github.event.inputs.tag_name }}
           if [ "${{ matrix.os }}" == "windows" ]; then
             BINARY_NAME="${BINARY_NAME}.exe"
           fi
@@ -74,14 +44,14 @@ jobs:
         with:
           name: aws-mfa-go-${{ matrix.os }}-${{ matrix.arch }}
           path: |
-            aws-mfa-go-${{ matrix.os }}-${{ matrix.arch }}-${{ env.TAG_NAME }}*
+            aws-mfa-go-${{ matrix.os }}-${{ matrix.arch }}-${{ github.event.inputs.tag_name }}*
 
       - name: Create Release
         if: success()
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ env.TAG_NAME }}
-          name: Release ${{ env.TAG_NAME }}
-          files: aws-mfa-go-${{ matrix.os }}-${{ matrix.arch }}-${{ env.TAG_NAME }}*
+          tag_name: ${{ github.event.inputs.tag_name }}
+          name: Release ${{ github.event.inputs.tag_name }}
+          files: aws-mfa-go-${{ matrix.os }}-${{ matrix.arch }}-${{ github.event.inputs.tag_name }}*
         env:
           GITHUB_TOKEN: ${{ secrets.MY_PAT_TOKEN }}

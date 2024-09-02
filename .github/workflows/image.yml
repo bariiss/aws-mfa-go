@@ -1,37 +1,19 @@
 name: Build and Push Multi-Arch aws-mfa-go Image to GitHub Container Registry
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
   workflow_dispatch:
     inputs:
-      logLevel:
-        description: "Log level"
+      tag_name:
+        description: "Tag Name"
         required: true
-        default: "debug"
-        type: choice
-        options:
-          - info
-          - warning
-          - debug
-      tags:
-        description: "Test scenario tags"
-        required: false
-        type: boolean
-      environment:
-        description: "Environment to run tests against"
-        type: environment
-        required: false
+
 jobs:
   build:
     name: Build and Push Multi-Arch aws-mfa-go Image to GitHub Container Registry
-    runs-on: [ubuntu-latest]
-    if: contains(github.event.head_commit.message, '#image')
+    runs-on: ubuntu-latest
     steps:
       - name: Check out code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -52,10 +34,6 @@ jobs:
         id: repo_name
         run: echo "REPO_NAME=$(echo ${{ github.repository }} | cut -d'/' -f2)" >> $GITHUB_OUTPUT
 
-      - name: Extract branch name
-        id: branch_name
-        run: echo "BRANCH_NAME=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
-
       - name: Build and push multi-arch image
         uses: docker/build-push-action@v4
         with:
@@ -65,7 +43,7 @@ jobs:
           push: true
           tags: |
             ghcr.io/${{ github.repository_owner }}/${{ steps.repo_name.outputs.REPO_NAME }}:latest
-            ghcr.io/${{ github.repository_owner }}/${{ steps.repo_name.outputs.REPO_NAME }}:${{ steps.branch_name.outputs.BRANCH_NAME }}
+            ghcr.io/${{ github.repository_owner }}/${{ steps.repo_name.outputs.REPO_NAME }}:${{ github.event.inputs.tag_name }}
           labels: |
             org.opencontainers.image.description=Multi-Arch ${{ steps.repo_name.outputs.REPO_NAME }} Image
           build-args: |
