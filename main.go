@@ -46,7 +46,7 @@ func main() {
 	}
 
 	if time.Now().Before(expirationTime) {
-		remainingDuration := expirationTime.Sub(time.Now())
+		remainingDuration := expirationTime.Sub(time.Now().UTC())
 		hoursRemaining := remainingDuration.Hours()
 		fmt.Printf("📌 The current token for profile '%s' is still valid until %v (about %.2f hours remaining). Do you want to continue? (y/n): ", awsProfile, expirationTime.Format("2006-01-02 15:04:05"), hoursRemaining)
 
