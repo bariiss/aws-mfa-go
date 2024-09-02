@@ -53,11 +53,17 @@ jobs:
           VERSION=$(date +'%Y.%m.%d-%H%M%S')
           echo "TAG_NAME=v${VERSION}" >> $GITHUB_ENV
 
+      - name: Upload Release Assets
+        uses: actions/upload-artifact@v3
+        with:
+          name: aws-mfa-go-${{ matrix.os }}-${{ matrix.arch }}
+          path: aws-mfa-go-${{ matrix.os }}-${{ matrix.arch }}
+
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ env.TAG_NAME }}
           name: Release ${{ env.TAG_NAME }}
-          files: aws-mfa-go-${{ matrix.arch }}
+          files: aws-mfa-go-*
         env:
           GITHUB_TOKEN: ${{ secrets.MY_PAT_TOKEN }}
