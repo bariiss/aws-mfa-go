@@ -24,11 +24,11 @@ on:
         description: "Environment to run tests against"
         type: environment
         required: false
+
 jobs:
   release:
     name: Create Release and Attach Artifacts
     runs-on: ubuntu-latest
-    needs: build
     steps:
       - name: Check out code
         uses: actions/checkout@v2
