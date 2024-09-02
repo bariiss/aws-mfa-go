@@ -1,4 +1,4 @@
-name: Build and Release Multi-Arch aws-mfa-go
+name: Release
 
 on:
   push:
@@ -27,7 +27,7 @@ on:
 
 jobs:
   release:
-    name: Create Release
+    name: Release and Push
     runs-on: ubuntu-latest
     if: contains(github.event.head_commit.message, '#release')
     strategy:
