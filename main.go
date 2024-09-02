@@ -37,9 +37,6 @@ func main() {
 	credentialsFilePath := filepath.Join(homeDir, ".aws", "credentials")
 
 	expirationTime, err := u.ReadExpirationTime(credentialsFilePath, awsProfile)
-	if err != nil {
-		// if the profile does not exist, the expiration time is not found
-	}
 
 	if expirationTime.IsZero() {
 		fmt.Printf("Profile '%s' does not exist, skipping expiration check.\n", awsProfile)
