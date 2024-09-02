@@ -47,29 +47,34 @@ jobs:
       - name: Create a Single Tag
         id: create_tag
         run: |
-          if [ -z "${{ github.event.head_commit.message }}" ]; then
-            VERSION=$(date +'%Y.%m.%d-%H%M%S')
-          else
-            VERSION=$(date +'%Y.%m.%d')
-          fi
+          VERSION=$(date +'%Y.%m.%d-%H%M%S')
           echo "TAG_NAME=v${VERSION}" >> $GITHUB_ENV
           echo "Created TAG_NAME=$TAG_NAME"
 
       - name: Build Binary for Release
         run: |
-          CGO_ENABLED=0 GOARCH=${{ matrix.arch }} GOOS=${{ matrix.os }} go build -o aws-mfa-go-${{ matrix.os }}-${{ matrix.arch }}-${{ env.TAG_NAME }} -a -ldflags="-s -w" -installsuffix cgo
+          BINARY_NAME=aws-mfa-go-${{ matrix.os }}-${{ matrix.arch }}-${{ env.TAG_NAME }}
+          if [ "${{ matrix.os }}" == "windows" ]; then
+            BINARY_NAME="${BINARY_NAME}.exe"
+          fi
+          CGO_ENABLED=0 GOARCH=${{ matrix.arch }} GOOS=${{ matrix.os }} go build -o $BINARY_NAME -a -ldflags="-s -w" -installsuffix cgo
 
       - name: Verify Binary Existence
         run: |
+          BINARY_NAME=aws-mfa-go-${{ matrix.os }}-${{ matrix.arch }}-${{ env.TAG_NAME }}
+          if [ "${{ matrix.os }}" == "windows" ]; then
+            BINARY_NAME="${BINARY_NAME}.exe"
+          fi
           echo "Verifying binary existence..."
-          ls -la aws-mfa-go-${{ matrix.os }}-${{ matrix.arch }}-${{ env.TAG_NAME }}
+          ls -la $BINARY_NAME
 
       - name: Upload Release Assets
         if: success()
         uses: actions/upload-artifact@v3
         with:
           name: aws-mfa-go-${{ matrix.os }}-${{ matrix.arch }}
-          path: aws-mfa-go-${{ matrix.os }}-${{ matrix.arch }}-${{ env.TAG_NAME }}
+          path: |
+            aws-mfa-go-${{ matrix.os }}-${{ matrix.arch }}-${{ env.TAG_NAME }}*
 
       - name: Create Release
         if: success()
@@ -77,6 +82,6 @@ jobs:
         with:
           tag_name: ${{ env.TAG_NAME }}
           name: Release ${{ env.TAG_NAME }}
-          files: aws-mfa-go-${{ matrix.os }}-${{ matrix.arch }}-${{ env.TAG_NAME }}
+          files: aws-mfa-go-${{ matrix.os }}-${{ matrix.arch }}-${{ env.TAG_NAME }}*
         env:
           GITHUB_TOKEN: ${{ secrets.MY_PAT_TOKEN }}
