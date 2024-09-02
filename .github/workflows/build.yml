@@ -69,7 +69,7 @@ jobs:
         with:
           context: .
           file: Dockerfile
-          platforms: linux/amd64,linux/arm64,linux/armhf,linux/i386,linux/riscv64,linux/s390x,linux/mips64el
+          platforms: linux/amd64,linux/arm64,linux/armhf,linux/i386,linux/s390x,linux/mips64el
           push: true
           tags: |
             ghcr.io/${{ github.repository_owner }}/${{ steps.repo_name.outputs.REPO_NAME }}:latest
