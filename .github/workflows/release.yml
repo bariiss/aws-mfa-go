@@ -45,7 +45,7 @@ jobs:
 
       - name: Build Binary for Release
         run: |
-          CGO_ENABLED=0 GOARCH=${{ matrix.arch }} GOOS=${{ matrix.os }} go build -o aws-mfa-go-${{ matrix.os }}-${{ matrix.arch }} -a -ldflags="-s -w" -installsuffix cgo
+          CGO_ENABLED=0 GOARCH=${{ matrix.arch }} GOOS=${{ matrix.os }} go build -o aws-mfa-go-${{ matrix.os }}-${{ matrix.arch }}-v${{ github.run_number }} -a -ldflags="-s -w" -installsuffix cgo
 
       - name: Create Tag
         id: create_tag
