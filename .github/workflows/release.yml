@@ -24,7 +24,6 @@ on:
         description: "Environment to run tests against"
         type: environment
         required: false
-
 jobs:
   release:
     name: Create Release and Attach Artifacts
@@ -42,11 +41,17 @@ jobs:
         run: |
           CGO_ENABLED=0 GOARCH=$TARGETARCH GOOS=linux go build -o aws-mfa-go -a -ldflags="-s -w" -installsuffix cgo
 
+      - name: Create Tag
+        id: create_tag
+        run: |
+          VERSION=$(date +'%Y.%m.%d-%H%M%S')
+          echo "TAG_NAME=v${VERSION}" >> $GITHUB_ENV
+
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ github.sha }}
-          name: Release ${{ github.sha }}
+          tag_name: ${{ env.TAG_NAME }}
+          name: Release ${{ env.TAG_NAME }}
           files: aws-mfa-go
         env:
           GITHUB_TOKEN: ${{ secrets.MY_PAT_TOKEN }}
