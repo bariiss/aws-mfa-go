@@ -1,7 +1,6 @@
 # Build stage
 FROM golang:1.23.0-bookworm AS builder
 
-# Set the Current Working Directory inside the container
 WORKDIR /app
 
 # Copy go mod and sum files
@@ -21,7 +20,6 @@ RUN CGO_ENABLED=0 GOARCH=$TARGETARCH GOOS=linux go build -o aws-mfa-go -a -ldfla
 # Final stage
 FROM scratch
 
-# Set the Current Working Directory inside the container
 WORKDIR /app
 
 # Copy CA certificates for HTTPS
