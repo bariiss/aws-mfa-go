@@ -24,10 +24,16 @@ on:
         description: "Environment to run tests against"
         type: environment
         required: false
+
 jobs:
   release:
     name: Create Release and Attach Artifacts
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [linux, windows, macos]
+        arch: [amd64, arm64]
+
     steps:
       - name: Check out code
         uses: actions/checkout@v2
@@ -39,7 +45,7 @@ jobs:
 
       - name: Build Binary for Release
         run: |
-          CGO_ENABLED=0 GOARCH=$TARGETARCH GOOS=linux go build -o aws-mfa-go -a -ldflags="-s -w" -installsuffix cgo
+          CGO_ENABLED=0 GOARCH=${{ matrix.arch }} GOOS=${{ matrix.os }} go build -o aws-mfa-go-${{ matrix.os }}-${{ matrix.arch }} -a -ldflags="-s -w" -installsuffix cgo
 
       - name: Create Tag
         id: create_tag
@@ -52,6 +58,6 @@ jobs:
         with:
           tag_name: ${{ env.TAG_NAME }}
           name: Release ${{ env.TAG_NAME }}
-          files: aws-mfa-go
+          files: aws-mfa-go-${{ matrix.arch }}
         env:
           GITHUB_TOKEN: ${{ secrets.MY_PAT_TOKEN }}
