@@ -32,8 +32,8 @@ jobs:
     if: contains(github.event.head_commit.message, '#release')
     strategy:
       matrix:
-        os: [linux, windows, darwin]
-        arch: [amd64, arm64]
+        os: [linux]
+        arch: [amd64, arm64, arm, armv6, armv7, ppc64le, s390x, riscv64, mips64, mips64le, mips, mipsle]
 
     steps:
       - name: Check out code
@@ -47,11 +47,7 @@ jobs:
       - name: Create a Single Tag
         id: create_tag
         run: |
-          if [ -z "${{ github.event.head_commit.message }}" ]; then
-            VERSION=$(date +'%Y.%m.%d-%H%M%S')
-          else
-            VERSION=$(date +'%Y.%m.%d')
-          fi
+          VERSION=$(date +'%Y.%m.%d')
           echo "TAG_NAME=v${VERSION}" >> $GITHUB_ENV
           echo "Created TAG_NAME=$TAG_NAME"
 
