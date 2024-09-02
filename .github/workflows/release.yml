@@ -32,7 +32,7 @@ jobs:
     if: contains(github.event.head_commit.message, '#release')
     strategy:
       matrix:
-        os: [linux]
+        os: [linux, windows, darwin]
         arch: [amd64, arm64]
 
     steps:
@@ -47,7 +47,11 @@ jobs:
       - name: Create a Single Tag
         id: create_tag
         run: |
-          VERSION=$(date +'%Y.%m.%d')
+          if [ -z "${{ github.event.head_commit.message }}" ]; then
+            VERSION=$(date +'%Y.%m.%d-%H%M%S')
+          else
+            VERSION=$(date +'%Y.%m.%d')
+          fi
           echo "TAG_NAME=v${VERSION}" >> $GITHUB_ENV
           echo "Created TAG_NAME=$TAG_NAME"
 
