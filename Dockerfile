@@ -18,7 +18,7 @@ COPY ./main.go .
 RUN CGO_ENABLED=0 GOARCH=$TARGETARCH GOOS=linux go build -o aws-mfa-go -a -ldflags="-s -w" -installsuffix cgo
 
 # Final stage
-FROM scratch
+FROM scratch AS final
 
 WORKDIR /app
 
