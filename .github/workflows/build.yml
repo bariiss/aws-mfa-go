@@ -52,7 +52,7 @@ jobs:
       - name: Create a Single Tag
         id: create_tag
         run: |
-          VERSION=$(date +'%Y%m%d')
+          VERSION=$(date +'%Y%m%d')-${GITHUB_SHA}
           echo "TAG_NAME=v${VERSION}" >> $GITHUB_ENV
           echo "Created TAG_NAME=$TAG_NAME"
 
