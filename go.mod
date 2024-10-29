@@ -1,6 +1,6 @@
 module github.com/bariiss/aws-mfa-go
 
-go 1.23.0
+go 1.23.2
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.22.2
@@ -8,6 +8,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sts v1.25.1
 	github.com/fatih/color v1.16.0
 	github.com/pquerna/otp v1.4.0
+	golang.org/x/term v0.25.0
 )
 
 require (
@@ -25,6 +26,6 @@ require (
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/stretchr/testify v1.6.1 // indirect
-	golang.org/x/sys v0.14.0 // indirect
+	golang.org/x/sys v0.26.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

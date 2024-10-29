@@ -3,7 +3,6 @@ package util
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -16,16 +15,15 @@ func SaveCredentialsToFile(f string, p string, c *Credentials) error {
 		return err
 	}
 
-	profileIndex, profileExists := findProfileIndex(lines, p)
+	profileHeader := "[" + p + "]"
+	profileIndex, profileExists := findProfileIndex(lines, profileHeader)
 
-	updatedProfileLines := formatProfileData(*c)
+	updatedProfileLines := formatProfileData(*c, profileHeader)
 
 	if profileExists {
 		lines = updateProfileLines(lines, profileIndex, updatedProfileLines)
 	} else {
-		lines = append(lines, "")
-		lines = append(lines, "["+p+"]")
-		lines = append(lines, updatedProfileLines...)
+		lines = append(lines, append([]string{""}, updatedProfileLines...)...)
 	}
 
 	return writeLinesToFile(f, lines)
@@ -36,12 +34,7 @@ func readLines(filePath string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer func(file *os.File) {
-		err := file.Close()
-		if err != nil {
-			log.Fatalf("Error closing file: %s", err)
-		}
-	}(file)
+	defer file.Close()
 
 	var lines []string
 	scanner := bufio.NewScanner(file)
@@ -51,8 +44,7 @@ func readLines(filePath string) ([]string, error) {
 	return lines, scanner.Err()
 }
 
-func findProfileIndex(lines []string, profile string) (int, bool) {
-	profileHeader := "[" + profile + "]"
+func findProfileIndex(lines []string, profileHeader string) (int, bool) {
 	for i, line := range lines {
 		if strings.TrimSpace(line) == profileHeader {
 			return i, true
@@ -62,33 +54,22 @@ func findProfileIndex(lines []string, profile string) (int, bool) {
 }
 
 func updateProfileLines(lines []string, profileIndex int, updatedProfileLines []string) []string {
-	updatedLines := make([]string, 0, len(lines))
-
-	updatedLines = append(updatedLines, lines[:profileIndex]...)
-
-	updatedLines = append(updatedLines, lines[profileIndex])
-
-	updatedLines = append(updatedLines, updatedProfileLines...)
-
 	nextProfileIndex := findNextProfileIndex(lines, profileIndex)
-	if nextProfileIndex < len(lines) {
-		updatedLines = append(updatedLines, lines[nextProfileIndex:]...)
-	}
-
-	return updatedLines
+	return append(append(lines[:profileIndex], updatedProfileLines...), lines[nextProfileIndex:]...)
 }
 
 func findNextProfileIndex(lines []string, currentIndex int) int {
-	for i := currentIndex; i < len(lines); i++ {
-		if strings.HasPrefix(lines[i], "[") && i != currentIndex {
+	for i := currentIndex + 1; i < len(lines); i++ {
+		if strings.HasPrefix(lines[i], "[") {
 			return i
 		}
 	}
 	return len(lines)
 }
 
-func formatProfileData(c Credentials) []string {
+func formatProfileData(c Credentials, profileHeader string) []string {
 	return []string{
+		profileHeader,
 		"aws_access_key_id = " + c.AccessKeyID,
 		"aws_secret_access_key = " + c.SecretAccessKey,
 		"aws_mfa_device = " + c.MFADevice,
@@ -105,17 +86,11 @@ func writeLinesToFile(filePath string, lines []string) error {
 	if err != nil {
 		return err
 	}
-	defer func(file *os.File) {
-		err := file.Close()
-		if err != nil {
-			log.Fatalf("Error closing file: %s", err)
-		}
-	}(file)
+	defer file.Close()
 
 	writer := bufio.NewWriter(file)
 	for _, line := range lines {
-		_, err := writer.WriteString(line + "\n")
-		if err != nil {
+		if _, err := writer.WriteString(line + "\n"); err != nil {
 			return err
 		}
 	}
@@ -123,23 +98,15 @@ func writeLinesToFile(filePath string, lines []string) error {
 }
 
 func ReadExpirationTime(filePath, profile string) (time.Time, error) {
-	file, err := os.Open(filePath)
+	lines, err := readLines(filePath)
 	if err != nil {
 		return time.Time{}, err
 	}
-	defer func(file *os.File) {
-		err := file.Close()
-		if err != nil {
-			log.Fatalf("Error closing file: %s", err)
-		}
-	}(file)
 
-	scanner := bufio.NewScanner(file)
 	profileHeader := "[" + profile + "]"
 	inProfile := false
 
-	for scanner.Scan() {
-		line := scanner.Text()
+	for _, line := range lines {
 		if strings.TrimSpace(line) == profileHeader {
 			inProfile = true
 			continue
@@ -152,10 +119,6 @@ func ReadExpirationTime(filePath, profile string) (time.Time, error) {
 			expirationStr = strings.TrimSpace(expirationStr)
 			return time.Parse("2006-01-02 15:04:05", expirationStr)
 		}
-	}
-
-	if err := scanner.Err(); err != nil {
-		return time.Time{}, err
 	}
 
 	return time.Time{}, fmt.Errorf("expiration time not found for profile %s", profile)
