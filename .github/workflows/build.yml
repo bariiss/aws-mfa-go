@@ -54,6 +54,7 @@ jobs:
         run: |
           VERSION=$(date +'%Y%m%d')-${GITHUB_SHA}
           echo "TAG_NAME=v${VERSION}" >> $GITHUB_ENV
+          echo "TAG_NAME=v${VERSION}" >> $GITHUB_OUTPUT
           echo "Created TAG_NAME=$TAG_NAME"
 
       - name: Extract repository name
