@@ -42,7 +42,7 @@ jobs:
       - name: Set up Go environment
         uses: actions/setup-go@v4
         with:
-          go-version: '1.23.0'
+          go-version: '1.23.2'
 
       - name: Create a Single Tag
         id: create_tag
