@@ -7,7 +7,7 @@ WORKDIR /app
 COPY go.mod go.sum ./
 
 # Download all dependencies
-RUN go mod download
+RUN go mod tidy
 
 # Copy the source from the current directory to the Working Directory inside the container
 COPY ./resourses/ ./resourses/
