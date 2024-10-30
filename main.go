@@ -32,13 +32,13 @@ func main() {
 		config.WithRegion(awsRegion),
 	)
 	if err != nil {
-		log.Fatalf("Unable to load AWS config: %s", err)
+		log.Fatalf("\nUnable to load AWS config: %s", err)
 	}
 
 	credentialsFilePath := getCredentialsFilePath()
 	expirationTime, err := u.ReadExpirationTime(credentialsFilePath, awsProfile)
 	if err != nil {
-		log.Printf("Error reading expiration time: %s", err)
+		log.Printf("\nError reading expiration time: %s", err)
 	}
 
 	if expirationTimeValid(expirationTime) {
@@ -50,13 +50,13 @@ func main() {
 
 	mfaDetails, err := u.ReadMFADetails(credentialsFilePath, awsProfile+"-go")
 	if err != nil {
-		log.Fatalf("Error reading MFA details: %s", err)
+		log.Fatalf("\nError reading MFA details: %s", err)
 	}
 
 	stsClient := sts.NewFromConfig(cfg)
 	mfaToken, err := u.GenerateMFAToken(mfaDetails.SecretKey)
 	if err != nil {
-		log.Fatalf("Error generating MFA token: %s", err)
+		log.Fatalf("\nError generating MFA token: %s", err)
 	}
 
 	resp, err := stsClient.GetSessionToken(context.Background(), &sts.GetSessionTokenInput{
@@ -71,7 +71,7 @@ func main() {
 		}(),
 	})
 	if err != nil {
-		log.Fatalf("Error getting session token: %s", err)
+		log.Fatalf("\nError getting session token: %s", err)
 	}
 
 	c := &u.Credentials{
@@ -86,7 +86,7 @@ func main() {
 	}
 
 	if err := u.SaveCredentialsToFile(credentialsFilePath, awsProfile, c); err != nil {
-		log.Fatalf("Error saving credentials to file: %s", err)
+		log.Fatalf("\nError saving credentials to file: %s", err)
 	}
 
 	printInfo()
@@ -107,14 +107,14 @@ func checkProfile() bool {
 func getCredentialsFilePath() string {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
-		log.Fatalf("Error getting home directory: %s", err)
+		log.Fatalf("\nError getting home directory: %s", err)
 	}
 	return filepath.Join(homeDir, ".aws", "credentials")
 }
 
 func expirationTimeValid(expirationTime time.Time) bool {
 	if expirationTime.IsZero() {
-		fmt.Printf("Profile '%s' does not exist, skipping expiration check.\n", awsProfile)
+		fmt.Printf("\nProfile '%s' does not exist, skipping expiration check.\n", awsProfile)
 		return false
 	}
 	if time.Now().Before(expirationTime) {
@@ -126,12 +126,12 @@ func expirationTimeValid(expirationTime time.Time) bool {
 }
 
 func confirmContinuation() bool {
-	fmt.Print("Do you want to continue? (y/n): ")
+	fmt.Print("🤔 Do you want to continue and generate a new token? (y/n): ")
 
 	// Set the terminal to raw mode to capture a single keystroke
 	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
 	if err != nil {
-		fmt.Printf("Error setting terminal to raw mode: %s\n", err)
+		fmt.Printf("\nError setting terminal to raw mode: %s\n", err)
 		return false
 	}
 	defer term.Restore(int(os.Stdin.Fd()), oldState)
@@ -140,7 +140,7 @@ func confirmContinuation() bool {
 	var response []byte = make([]byte, 1)
 	_, err = os.Stdin.Read(response)
 	if err != nil {
-		fmt.Printf("Error reading response: %s\n", err)
+		fmt.Printf("\nError reading response: %s\n", err)
 		return false
 	}
 

@@ -121,5 +121,5 @@ func ReadExpirationTime(filePath, profile string) (time.Time, error) {
 		}
 	}
 
-	return time.Time{}, fmt.Errorf("expiration time not found for profile %s", profile)
+	return time.Time{}, fmt.Errorf("\nExpiration time not found for profile %s", profile)
 }

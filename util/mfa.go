@@ -3,18 +3,19 @@ package util
 import (
 	"bufio"
 	"fmt"
-	"github.com/pquerna/otp/totp"
 	"log"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/pquerna/otp/totp"
 )
 
 func GenerateMFAToken(secret string) (string, error) {
 	token, err := totp.GenerateCode(secret, time.Now())
 	if err != nil {
-		return "", fmt.Errorf("error generating TOTP code: %w", err)
+		return "", fmt.Errorf("\nError generating TOTP code: %w", err)
 	}
 	return token, nil
 }
@@ -27,7 +28,7 @@ func ReadMFADetails(filePath, profile string) (MFADetails, error) {
 	defer func(file *os.File) {
 		err := file.Close()
 		if err != nil {
-			log.Fatalf("Error closing file: %s", err)
+			log.Fatalf("\nError closing file: %s", err)
 		}
 	}(file)
 
@@ -57,7 +58,7 @@ func ReadMFADetails(filePath, profile string) (MFADetails, error) {
 				case "aws_mfa_duration":
 					durationSeconds, err := strconv.ParseInt(value, 10, 64)
 					if err != nil {
-						return MFADetails{}, fmt.Errorf("error parsing duration: %w", err)
+						return MFADetails{}, fmt.Errorf("\nError parsing duration: %w", err)
 					}
 					details.Duration = time.Duration(durationSeconds * int64(time.Second)).String()
 				case "aws_mfa_secret_key":
