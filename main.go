@@ -31,12 +31,14 @@ func main() {
 		config.WithSharedConfigProfile(awsProfile+"-go"),
 		config.WithRegion(awsRegion),
 	)
+
 	if err != nil {
 		log.Fatalf("\nUnable to load AWS config: %s", err)
 	}
 
 	credentialsFilePath := getCredentialsFilePath()
 	expirationTime, err := u.ReadExpirationTime(credentialsFilePath, awsProfile)
+
 	if err != nil {
 		log.Printf("\nError reading expiration time: %s", err)
 	}
@@ -49,12 +51,14 @@ func main() {
 	}
 
 	mfaDetails, err := u.ReadMFADetails(credentialsFilePath, awsProfile+"-go")
+
 	if err != nil {
 		log.Fatalf("\nError reading MFA details: %s", err)
 	}
 
 	stsClient := sts.NewFromConfig(cfg)
 	mfaToken, err := u.GenerateMFAToken(mfaDetails.SecretKey)
+
 	if err != nil {
 		log.Fatalf("\nError generating MFA token: %s", err)
 	}
@@ -70,6 +74,7 @@ func main() {
 			return nil
 		}(),
 	})
+
 	if err != nil {
 		log.Fatalf("\nError getting session token: %s", err)
 	}
@@ -106,9 +111,11 @@ func checkProfile() bool {
 
 func getCredentialsFilePath() string {
 	homeDir, err := os.UserHomeDir()
+
 	if err != nil {
 		log.Fatalf("\nError getting home directory: %s", err)
 	}
+
 	return filepath.Join(homeDir, ".aws", "credentials")
 }
 
@@ -117,11 +124,13 @@ func expirationTimeValid(expirationTime time.Time) bool {
 		fmt.Printf("\nProfile '%s' does not exist, skipping expiration check.\n", awsProfile)
 		return false
 	}
+
 	if time.Now().Before(expirationTime) {
 		remainingDuration := expirationTime.Sub(time.Now().UTC()).Hours()
 		fmt.Printf("📌 The current token for profile '%s' is valid until %v (about %.2f hours remaining).\n", awsProfile, expirationTime.Format("2006-01-02 15:04:05"), remainingDuration)
 		return true
 	}
+
 	return false
 }
 
@@ -130,15 +139,18 @@ func confirmContinuation() bool {
 
 	// Set the terminal to raw mode to capture a single keystroke
 	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
+
 	if err != nil {
 		fmt.Printf("\nError setting terminal to raw mode: %s\n", err)
 		return false
 	}
+
 	defer term.Restore(int(os.Stdin.Fd()), oldState)
 
 	// Read a single character
 	var response []byte = make([]byte, 1)
 	_, err = os.Stdin.Read(response)
+	
 	if err != nil {
 		fmt.Printf("\nError reading response: %s\n", err)
 		return false
