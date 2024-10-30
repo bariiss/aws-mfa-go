@@ -43,7 +43,7 @@ func main() {
 
 	if expirationTimeValid(expirationTime) {
 		if !confirmContinuation() {
-			fmt.Println("🤖 Operation aborted.")
+			fmt.Println("\n🤖 Operation aborted.")
 			return
 		}
 	}
@@ -149,7 +149,7 @@ func confirmContinuation() bool {
 }
 
 func printInfo() {
-	fmt.Printf("👍 Credentials saved to file for profile '%s'.\n🎉 You can now use profile '%s' with the AWS CLI.\n", awsProfile, awsProfile)
+	fmt.Printf("\n👍 Credentials saved to file for profile '%s'.\n🎉 You can now use profile '%s' with the AWS CLI.\n", awsProfile, awsProfile)
 	color.Yellow("👉 Example: aws configure --profile %s", awsProfile)
 	color.Cyan("👌 Example: aws --profile %s s3 ls", awsProfile)
 }
