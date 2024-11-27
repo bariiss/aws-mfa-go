@@ -2,6 +2,8 @@ name: Release
 
 on:
   push:
+    tags:
+      - 'v*'
     branches: [main]
   pull_request:
     branches: [main]
@@ -16,10 +18,6 @@ on:
           - info
           - warning
           - debug
-      tags:
-        description: "Test scenario tags"
-        required: false
-        type: boolean
       environment:
         description: "Environment to run tests against"
         type: environment
@@ -34,21 +32,32 @@ jobs:
       matrix:
         os: [linux, windows, darwin]
         arch: [amd64, arm64]
+      fail-fast: false
 
     steps:
       - name: Check out code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Go environment
         uses: actions/setup-go@v4
         with:
-          go-version: '1.23.2'
+          go-version: '1.21'
+          cache: true
 
-      - name: Create a Single Tag
+      - name: Get dependencies
+        run: go mod download
+
+      - name: Run tests
+        run: go test -v ./...
+
+      - name: Create version tag
         id: create_tag
         run: |
-          VERSION=$(date +'%Y%m%d')
-          echo "TAG_NAME=v${VERSION}" >> $GITHUB_ENV
+          VERSION=$(date +'%Y.%m.%d')
+          COMMIT_SHA=$(git rev-parse --short HEAD)
+          echo "TAG_NAME=v${VERSION}-${COMMIT_SHA}" >> $GITHUB_ENV
           echo "Created TAG_NAME=$TAG_NAME"
 
       - name: Build Binary for Release
@@ -57,9 +66,9 @@ jobs:
           if [ "${{ matrix.os }}" == "windows" ]; then
             BINARY_NAME="${BINARY_NAME}.exe"
           fi
-          CGO_ENABLED=0 GOARCH=${{ matrix.arch }} GOOS=${{ matrix.os }} go build -o $BINARY_NAME -a -ldflags="-s -w" -installsuffix cgo
+          CGO_ENABLED=0 GOARCH=${{ matrix.arch }} GOOS=${{ matrix.os }} go build -v -o $BINARY_NAME -a -trimpath -ldflags="-s -w -X main.version=${{ env.TAG_NAME }}" -installsuffix cgo
 
-      - name: Verify Binary Existence
+      - name: Verify Binary and Calculate Checksum
         run: |
           BINARY_NAME=aws-mfa-go-${{ matrix.os }}-${{ matrix.arch }}-${{ env.TAG_NAME }}
           if [ "${{ matrix.os }}" == "windows" ]; then
@@ -67,6 +76,7 @@ jobs:
           fi
           echo "Verifying binary existence..."
           ls -la $BINARY_NAME
+          sha256sum $BINARY_NAME > ${BINARY_NAME}.sha256
 
       - name: Upload Release Assets
         if: success()
@@ -75,13 +85,18 @@ jobs:
           name: aws-mfa-go-${{ matrix.os }}-${{ matrix.arch }}
           path: |
             aws-mfa-go-${{ matrix.os }}-${{ matrix.arch }}-${{ env.TAG_NAME }}*
+          retention-days: 5
 
       - name: Create Release
-        if: success()
+        if: success() && github.event_name != 'pull_request'
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ env.TAG_NAME }}
-          name: ${{ env.TAG_NAME }}
-          files: aws-mfa-go-${{ matrix.os }}-${{ matrix.arch }}-${{ env.TAG_NAME }}*
+          name: Release ${{ env.TAG_NAME }}
+          files: |
+            aws-mfa-go-${{ matrix.os }}-${{ matrix.arch }}-${{ env.TAG_NAME }}*
+          generate_release_notes: true
+          draft: false
+          prerelease: false
         env:
-          GITHUB_TOKEN: ${{ secrets.MY_PAT_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

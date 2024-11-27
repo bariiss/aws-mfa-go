@@ -1,76 +1,130 @@
-
 # AWS MFA Go
 
-AWS MFA Go is a Go application designed to manage session tokens associated with MFA (Multi-Factor Authentication) for AWS (Amazon Web Services).
+A robust Go application for managing AWS Multi-Factor Authentication (MFA) session tokens. This tool simplifies the process of obtaining and managing temporary credentials for AWS CLI and SDK operations when MFA is enabled.
 
 ## Features
 
-- Manages AWS credentials and automates the login process with MFA.
-- Generates temporary credentials for AWS CLI and SDK.
+- Automated MFA token generation and validation
+- Session token management with configurable duration
+- Secure credential file handling
+- Support for multiple AWS profiles
+- Cross-platform support (Linux, macOS, Windows)
+- Easy integration with existing AWS workflows
+
+## Prerequisites
+
+- Go 1.21 or later
+- AWS CLI configured with base credentials
+- AWS IAM user with MFA enabled
+- AWS credentials file (`~/.aws/credentials`)
 
 ## Installation
 
-Follow these steps to run the project:
+### Using Go Install
 
-1. Clone or download the project.
-2. Install the required Go modules:
+```bash
+go install github.com/bariiss/aws-mfa-go@latest
+```
 
-   ```bash
-   go mod download
-   ```
+### Building from Source
 
-3. Run the application:
+1. Clone the repository:
+```bash
+git clone https://github.com/bariiss/aws-mfa-go.git
+cd aws-mfa-go
+```
 
-   ```bash
-   go run main.go
-   ```
+2. Install dependencies:
+```bash
+go mod download
+```
 
-4. Install the application: (optional)
+3. Build the application:
+```bash
+go build -o aws-mfa-go
+```
 
-   ```bash
-   go install github.com/bariiss/aws-mfa-go@latest
-   aws-mfa-go # NOTE: You must set the environment variables and credentials before running the application.
-   ```
+## Configuration
+
+### Environment Variables
+
+Set the following environment variables:
+
+```bash
+export AWS_MFA_GO_USER=your-aws-profile
+export AWS_MFA_GO_REGION=your-aws-region
+```
+
+Add these to your shell configuration file (`.bashrc`, `.zshrc`, etc.) for persistence.
+
+### AWS Credentials
+
+1. Ensure your base AWS credentials are configured in `~/.aws/credentials`:
+
+```ini
+[your-aws-profile]
+aws_access_key_id = YOUR_ACCESS_KEY
+aws_secret_access_key = YOUR_SECRET_KEY
+aws_mfa_device = arn:aws:iam::ACCOUNT_ID:mfa/YOUR_USERNAME
+aws_mfa_duration = 43200  # Optional: Session duration in seconds (default: 12 hours)
+aws_mfa_secret_key = YOUR_MFA_SECRET  # For virtual MFA devices
+```
 
 ## Usage
 
-Set the following environment variables to start the application:
-
-- `AWS_MFA_GO_USER`: Your AWS username (associated with the MFA device).
-- `AWS_MFA_GO_REGION`: Your AWS region.
-
-You can also set the environment variables in the `~/.bashrc` file:
-
-```bash
-export AWS_MFA_GO_USER=<profile>
-export AWS_MFA_GO_REGION=<region>
-```
-
-Save your AWS credentials in the `~/.aws/credentials` file:
-
-```bash
-[<profile>-go] # The profile name must end with "-go".
-aws_access_key_id = <aws_access_key_id> # Your AWS access key ID.
-aws_secret_access_key = <aws_secret_access_key> # Your AWS secret access key.
-aws_mfa_device = <aws_mfa_device> # Your AWS MFA device ARN.
-aws_mfa_duration = <aws_mfa_duration> # The duration of the session token (in seconds).
-aws_mfa_secret_key = <aws_mfa_secret_key> # Your AWS MFA secret key.
-```
-
-You can create a new profile by running the `aws-mfa-go` command:
-
+1. Run the application:
 ```bash
 aws-mfa-go
 ```
 
-After setting the environment variables and saving your AWS credentials, you can run the `aws configure` command to configure your AWS CLI:
+2. The tool will:
+   - Generate MFA token automatically (if secret key is configured)
+   - Request MFA code (if manual input is needed)
+   - Obtain temporary credentials from AWS
+   - Save the credentials to your AWS credentials file
 
+3. Use AWS CLI or SDK with the new profile:
 ```bash
-aws configure --profile <profile>
+aws s3 ls --profile your-aws-profile-go
 ```
 
-Then, you can manage your AWS MFA operations by running the application.
+## Security Considerations
+
+- Store MFA secret keys securely
+- Use appropriate session durations
+- Keep your AWS credentials file protected
+- Regularly rotate access keys
+- Never commit credentials to version control
+
+## Building for Different Platforms
+
+The application can be built for various platforms:
+
+```bash
+# For Linux
+GOOS=linux GOARCH=amd64 go build -o aws-mfa-go-linux
+
+# For macOS
+GOOS=darwin GOARCH=amd64 go build -o aws-mfa-go-macos
+
+# For Windows
+GOOS=windows GOARCH=amd64 go build -o aws-mfa-go.exe
+```
 
 ## Contributing
 
-You can contribute by sending pull requests or opening issues for bug reports and feature requests.
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgments
+
+- AWS SDK for Go
+- The Go community
+- All contributors to this project

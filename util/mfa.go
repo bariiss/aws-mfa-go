@@ -3,7 +3,6 @@ package util
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -25,43 +24,58 @@ func ReadMFADetails(filePath, profile string) (MFADetails, error) {
 	if err != nil {
 		return MFADetails{}, err
 	}
-	defer func(file *os.File) {
-		err := file.Close()
-		if err != nil {
-			log.Fatalf("\nError closing file: %s", err)
-		}
-	}(file)
+	defer file.Close()
 
 	var details MFADetails
 	scanner := bufio.NewScanner(file)
+
+	// Optimize scanner buffer
+	buf := make([]byte, 0, 64*1024)
+	scanner.Buffer(buf, 1024*1024)
+
+	// Pre-compute profile header
 	profileHeader := "[" + profile + "]"
 	inProfile := false
 
+	// Pre-allocate commonly used strings
+	const (
+		deviceKey   = "aws_mfa_device"
+		durationKey = "aws_mfa_duration"
+		secretKey   = "aws_mfa_secret_key"
+	)
+
 	for scanner.Scan() {
 		line := scanner.Text()
-		if strings.TrimSpace(line) == profileHeader {
+
+		// Fast path for empty lines
+		if len(line) == 0 {
+			continue
+		}
+
+		trimmed := strings.TrimSpace(line)
+		if trimmed == profileHeader {
 			inProfile = true
 			continue
 		}
-		if inProfile && strings.HasPrefix(line, "[") {
-			break
-		}
+
 		if inProfile {
-			keyValue := strings.SplitN(line, "=", 2)
-			if len(keyValue) == 2 {
-				key := strings.TrimSpace(keyValue[0])
-				value := strings.TrimSpace(keyValue[1])
+			if line[0] == '[' {
+				break
+			}
+
+			// Only process line if it contains '='
+			if idx := strings.IndexByte(line, '='); idx >= 0 {
+				key := strings.TrimSpace(line[:idx])
+				value := strings.TrimSpace(line[idx+1:])
 
 				switch key {
-				case "aws_mfa_device":
+				case deviceKey:
 					details.Device = value
-				case "aws_mfa_duration":
-					durationSeconds, err := strconv.ParseInt(value, 10, 64)
-					if err != nil {
-						return MFADetails{}, fmt.Errorf("\nError parsing duration: %w", err)
+				case durationKey:
+					if durationSeconds, err := strconv.ParseInt(value, 10, 64); err == nil {
+						details.Duration = time.Duration(durationSeconds * int64(time.Second)).String()
 					}
-					details.Duration = time.Duration(durationSeconds * int64(time.Second)).String()
-				case "aws_mfa_secret_key":
+				case secretKey:
 					details.SecretKey = value
 				}
 			}
