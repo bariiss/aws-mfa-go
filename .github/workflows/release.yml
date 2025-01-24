@@ -45,8 +45,7 @@ jobs:
         id: create_tag
         run: |
           VERSION=$(date +'%Y.%m.%d')
-          COMMIT_SHA=$(git rev-parse --short HEAD)
-          echo "TAG_NAME=v${VERSION}-${COMMIT_SHA}" >> $GITHUB_ENV
+          echo "TAG_NAME=v${VERSION}" >> $GITHUB_ENV
           echo "Created TAG_NAME=$TAG_NAME"
 
       - name: Build Binary for Release
