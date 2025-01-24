@@ -153,7 +153,7 @@ func confirmContinuation() bool {
 	}(int(os.Stdin.Fd()), oldState)
 
 	// Read a single character
-	var response []byte = make([]byte, 1)
+	var response = make([]byte, 1)
 	_, err = os.Stdin.Read(response)
 
 	if err != nil {
