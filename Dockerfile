@@ -16,8 +16,8 @@ COPY ./resourses/ ./resourses/
 COPY ./util/ ./util/
 COPY ./main.go .
 
-# Build the Go app
-RUN CGO_ENABLED=0 GOARCH=$TARGETARCH GOOS=linux go build -o aws-mfa-go -a -ldflags="-s -w" -installsuffix cgo
+# Build the Go app with detailed error output
+RUN CGO_ENABLED=0 GOARCH=$TARGETARCH GOOS=linux go build -o aws-mfa-go -a -ldflags="-s -w" -installsuffix cgo || { echo 'Go build failed'; exit 1; }
 
 # Final stage
 FROM scratch AS final
