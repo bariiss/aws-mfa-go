@@ -24,7 +24,12 @@ func ReadMFADetails(filePath, profile string) (MFADetails, error) {
 	if err != nil {
 		return MFADetails{}, err
 	}
-	defer file.Close()
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+			fmt.Printf("\nError closing file: %s", err)
+		}
+	}(file)
 
 	var details MFADetails
 	scanner := bufio.NewScanner(file)

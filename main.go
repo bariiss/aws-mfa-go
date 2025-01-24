@@ -110,13 +110,13 @@ func checkProfile() bool {
 }
 
 func getCredentialsFilePath() string {
-	homeDir, err := os.UserHomeDir()
+	homeDirs, err := os.UserHomeDir()
 
 	if err != nil {
 		log.Fatalf("\nError getting home directory: %s", err)
 	}
 
-	return filepath.Join(homeDir, ".aws", "credentials")
+	return filepath.Join(homeDirs, ".aws", "credentials")
 }
 
 func expirationTimeValid(expirationTime time.Time) bool {
@@ -145,12 +145,17 @@ func confirmContinuation() bool {
 		return false
 	}
 
-	defer term.Restore(int(os.Stdin.Fd()), oldState)
+	defer func(fd int, oldState *term.State) {
+		err := term.Restore(fd, oldState)
+		if err != nil {
+			fmt.Printf("\nError restoring terminal state: %s\n", err)
+		}
+	}(int(os.Stdin.Fd()), oldState)
 
 	// Read a single character
 	var response []byte = make([]byte, 1)
 	_, err = os.Stdin.Read(response)
-	
+
 	if err != nil {
 		fmt.Printf("\nError reading response: %s\n", err)
 		return false

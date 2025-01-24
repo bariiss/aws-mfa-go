@@ -34,16 +34,21 @@ func readLines(filePath string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+			fmt.Printf("\nError closing file: %s", err)
+		}
+	}(file)
 
 	// Pre-allocate slice with an initial capacity
 	lines := make([]string, 0, 50)
 	scanner := bufio.NewScanner(file)
-	
+
 	// Optimize scanner buffer for larger files
 	buf := make([]byte, 0, 64*1024)
 	scanner.Buffer(buf, 1024*1024)
-	
+
 	for scanner.Scan() {
 		lines = append(lines, scanner.Text())
 	}
@@ -93,11 +98,21 @@ func writeLinesToFile(filePath string, lines []string) error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+			fmt.Printf("\nError closing file: %s", err)
+		}
+	}(file)
 
 	// Use bufio.Writer with larger buffer
 	writer := bufio.NewWriterSize(file, 64*1024)
-	defer writer.Flush()
+	defer func(writer *bufio.Writer) {
+		err := writer.Flush()
+		if err != nil {
+			fmt.Printf("\nError flushing buffer: %s", err)
+		}
+	}(writer)
 
 	for _, line := range lines {
 		if _, err := writer.WriteString(line + "\n"); err != nil {
