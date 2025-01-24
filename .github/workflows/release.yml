@@ -32,7 +32,7 @@ jobs:
       - name: Set up Go environment
         uses: actions/setup-go@v4
         with:
-          go-version: '1.21'
+          go-version: '1.23'
           cache: true
 
       - name: Get dependencies
@@ -44,13 +44,13 @@ jobs:
       - name: Create version tag
         id: create_tag
         run: |
-          VERSION=$(date +'%Y.%m.%d')
+          VERSION=$(date +'%Y%m%d')
           echo "TAG_NAME=v${VERSION}" >> $GITHUB_ENV
           echo "Created TAG_NAME=$TAG_NAME"
 
       - name: Build Binary for Release
         run: |
-          BINARY_NAME=aws-mfa-go-${{ matrix.os }}-${{ matrix.arch }}-${{ env.TAG_NAME }}
+          BINARY_NAME=aws-mfa-go-${{ matrix.os }}-${{ matrix.arch }}
           if [ "${{ matrix.os }}" == "windows" ]; then
             BINARY_NAME="${BINARY_NAME}.exe"
           fi
@@ -80,9 +80,9 @@ jobs:
         uses: softprops/action-gh-release@c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda
         with:
           tag_name: ${{ env.TAG_NAME }}
-          name: Release ${{ env.TAG_NAME }}
+          name: ${{ env.TAG_NAME }}
           files: |
-            aws-mfa-go-${{ matrix.os }}-${{ matrix.arch }}-${{ env.TAG_NAME }}*
+            aws-mfa-go-${{ matrix.os }}-${{ matrix.arch }}*
           generate_release_notes: true
           draft: false
           prerelease: false
@@ -99,7 +99,7 @@ jobs:
             if gh release create ${{ env.TAG_NAME }} \
               --title "Release ${{ env.TAG_NAME }}" \
               --generate-notes \
-              aws-mfa-go-${{ matrix.os }}-${{ matrix.arch }}-${{ env.TAG_NAME }}*; then
+              aws-mfa-go-${{ matrix.os }}-${{ matrix.arch }}*; then
               echo "Release created successfully on attempt $i"
               exit 0
             fi
