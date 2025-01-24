@@ -1,5 +1,4 @@
 services:
-  # 
   aws-mfa-go:
     build:
       context: .
