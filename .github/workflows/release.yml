@@ -58,7 +58,7 @@ jobs:
 
       - name: Verify Binary and Calculate Checksum
         run: |
-          BINARY_NAME=aws-mfa-go-${{ matrix.os }}-${{ matrix.arch }}-${{ env.TAG_NAME }}
+          BINARY_NAME=aws-mfa-go-${{ matrix.os }}-${{ matrix.arch }}
           if [ "${{ matrix.os }}" == "windows" ]; then
             BINARY_NAME="${BINARY_NAME}.exe"
           fi
@@ -72,7 +72,7 @@ jobs:
         with:
           name: aws-mfa-go-${{ matrix.os }}-${{ matrix.arch }}
           path: |
-            aws-mfa-go-${{ matrix.os }}-${{ matrix.arch }}-${{ env.TAG_NAME }}*
+            aws-mfa-go-${{ matrix.os }}-${{ matrix.arch }}*
           retention-days: 5
 
       - name: Create Release
@@ -97,7 +97,7 @@ jobs:
           for i in {1..3}; do
             echo "Attempt $i"
             if gh release create ${{ env.TAG_NAME }} \
-              --title "Release ${{ env.TAG_NAME }}" \
+              --title "${{ env.TAG_NAME }}" \
               --generate-notes \
               aws-mfa-go-${{ matrix.os }}-${{ matrix.arch }}*; then
               echo "Release created successfully on attempt $i"
