@@ -1,6 +1,6 @@
 module github.com/bariiss/aws-mfa-go
 
-go 1.23.4
+go 1.23
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.33.0
