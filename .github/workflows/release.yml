@@ -68,7 +68,7 @@ jobs:
 
       - name: Upload Release Assets
         if: success()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: aws-mfa-go-${{ matrix.os }}-${{ matrix.arch }}
           path: |
