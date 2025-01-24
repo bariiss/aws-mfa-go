@@ -7,21 +7,6 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
-  workflow_dispatch:
-    inputs:
-      logLevel:
-        description: "Log level"
-        required: true
-        default: "debug"
-        type: choice
-        options:
-          - info
-          - warning
-          - debug
-      environment:
-        description: "Environment to run tests against"
-        type: environment
-        required: false
         
 permissions:
   contents: read
@@ -93,7 +78,7 @@ jobs:
 
       - name: Create Release
         if: success() && github.event_name != 'pull_request'
-        uses: softprops/action-gh-release@26994186c0ac3ef5cae75ac16aa32e8153525f77
+        uses: softprops/action-gh-release@c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda
         with:
           tag_name: ${{ env.TAG_NAME }}
           name: Release ${{ env.TAG_NAME }}
